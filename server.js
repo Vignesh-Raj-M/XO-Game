@@ -41,7 +41,7 @@ function isDraw(board) {
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  socket.on('createRoom', () => {
+  socket.on('createRoom', (nickname) => {
     let code;
     do {
       code = generateRoomCode();
@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     rooms.set(code, {
       board: ['', '', '', '', '', '', '', '', ''],
       currentPlayer: 'X',
-      players: { X: socket.id },
+      players: { X: socket.id, XNick: nickname || 'Anonymous' },
       scores: { X: 0, O: 0 },
       active: true
     });
@@ -77,7 +77,8 @@ io.on('connection', (socket) => {
     io.emit('leaderboardUpdate', top10);
   });
 
-  socket.on('joinRoom', (code) => {
+  socket.on('joinRoom', (data) => {
+    const { code, nickname } = data;
     const room = rooms.get(code);
     if (!room || Object.keys(room.players).length === 2 || !room.active) {
       socket.emit('joinError', 'Room full or invalid');
@@ -85,6 +86,8 @@ io.on('connection', (socket) => {
     }
     socket.join(code);
     room.players.O = socket.id;
+    room.players.ONick = nickname || 'Anonymous';
+    room.currentPlayer = 'X';
     io.to(code).emit('roomReady', code, room.currentPlayer);
     socket.emit('playerAssigned', 'O');
     io.to(code).emit('roomUpdate', room);
@@ -93,7 +96,8 @@ io.on('connection', (socket) => {
   socket.on('makeMove', (data) => {
     const { code, index } = data;
     const room = rooms.get(code);
-    if (!room || !room.active || room.board[index] !== '' || room.currentPlayer !== (room.players.X === socket.id ? 'X' : 'O')) return;
+    const playerSymbol = room.players.X === socket.id ? 'X' : 'O';
+    if (!room || !room.active || room.board[index] !== '' || room.currentPlayer !== playerSymbol) return;
 
     room.board[index] = room.currentPlayer;
     const win = checkWin(room.board, room.currentPlayer);
