@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', (data) => {
     const { code, nickname } = data;
     const room = rooms.get(code);
-    if (!room || Object.keys(room.players).length === 2 || !room.active) {
+    if (!room || !room.players.X || room.players.O || !room.active) {
       socket.emit('joinError', 'Room full or invalid');
       return;
     }
@@ -151,7 +151,7 @@ try {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 

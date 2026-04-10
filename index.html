@@ -207,11 +207,6 @@
             }
         });
 
-        elements.createBtn.addEventListener('click', () => socket.emit('createRoom'));
-        elements.joinBtn.addEventListener('click', () => {
-            const code = elements.roomInput.value.trim().toUpperCase();
-            if (code.length === 4) socket.emit('joinRoom', code);
-        });
         elements.resetBtn.addEventListener('click', () => socket.emit('resetGame', roomCode));
 
         socket.on('roomCreated', (code) => {

@@ -1,13 +1,14 @@
-# Professional Cross-Device XO Multiplayer Upgrade TODO
+# Advanced XO Game TODO
 
-## Previous Local Game: Complete ✓
+## Multiplayer Core: Complete ✓ (fixed create/join)
 
-## New Multiplayer Steps:
-- [x] Step 1: Create package.json with express/socket.io deps.
-- [x] Step 2: Create server.js (Express serve HTML, Socket.IO rooms/moves).
-- [x] Step 3: Update index.html to pro multiplayer client (Socket.IO, room UI, animations, scores).
-- [x] Step 4: Run `npm install && node server.js`
-- [x] Step 5: Test cross-device (localhost:3000 create/join room).
+## Advanced Features:
+- [ ] Step 1: Add board size selector (3x3/4x4).
+- [ ] Step 2: Add move timer (30s).
+- [ ] Step 3: Add room chat.
+- [ ] Step 4: Themes (dark/light).
+- [ ] Step 5: AI single-player.
+- [ ] Step 6: Test & complete.
 
-**Complete!** npm install done. Run `node server.js` next, then open http://localhost:3000 on both devices: create room → join with code → play real-time. Professional UI with scores, confetti, animations.
+Updated step-by-step.
 
