@@ -61,8 +61,8 @@ io.on('connection', (socket) => {
     const { name } = data;
     let leaderboard = [];
     try {
-      const data = fs.readFileSync(pathToLeaderboard, 'utf8');
-      leaderboard = JSON.parse(data);
+      const fileData = fs.readFileSync(pathToLeaderboard, 'utf8');
+      leaderboard = JSON.parse(fileData);
     } catch (e) {
       leaderboard = [];
     }
@@ -72,7 +72,11 @@ io.on('connection', (socket) => {
     } else {
       leaderboard.push({ name, wins: 1 });
     }
-    fs.writeFileSync(pathToLeaderboard, JSON.stringify(leaderboard, null, 2));
+    try {
+      fs.writeFileSync(pathToLeaderboard, JSON.stringify(leaderboard, null, 2));
+    } catch (e) {
+      console.error('Failed to write leaderboard:', e);
+    }
     const top10 = leaderboard.sort((a,b) => b.wins - a.wins).slice(0,10);
     io.emit('leaderboardUpdate', top10);
   });
@@ -144,10 +148,8 @@ let leaderboard = [];
 try {
   const data = fs.readFileSync(pathToLeaderboard, 'utf8');
   leaderboard = JSON.parse(data);
-  const top10 = leaderboard.sort((a,b) => b.wins - a.wins).slice(0,10);
-  io.emit('leaderboardUpdate', top10);
 } catch (e) {
-  io.emit('leaderboardUpdate', []);
+  leaderboard = [];
 }
 
 const PORT = process.env.PORT || 3000;
