@@ -158,13 +158,20 @@
     <canvas id="confetti"></canvas>
 
     <script>
-        const socket = io();
+        const socket = io('http://localhost:3000', {
+            transports: ['websocket'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 10
+        });
         let roomCode = '';
         let playerSymbol = '';
         let board = [];
         let currentPlayer = '';
         let gameActive = true;
         let scores = { X: 0, O: 0 };
+        let isConnected = false;
 
         const elements = {
             leaderboardList: document.getElementById('leaderboardList'),
@@ -188,14 +195,59 @@
 
         let nickname = '';
 
+        console.log('Page loaded');
+        console.log('Attempting to connect to socket.io server');
+
+        socket.on('connect', () => {
+            isConnected = true;
+            console.log('Connected to server');
+            console.log('Socket ID:', socket.id);
+            elements.roomInfo.textContent = '';
+        });
+
+        socket.on('disconnect', () => {
+            isConnected = false;
+            console.log('Disconnected from server');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            console.error('Error details:', error.message);
+            elements.roomInfo.textContent = `Connection Error: ${error.message || error}. Retrying...`;
+        });
+
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
+        });
+
         elements.createBtn.addEventListener('click', () => {
+            if (!isConnected) {
+                elements.roomInfo.textContent = 'Not connected to server. Please refresh page and ensure backend is running.';
+                return;
+            }
             nickname = elements.nicknameInput.value.trim() || 'Anonymous';
+            if (!nickname) {
+                elements.roomInfo.textContent = 'Please enter a nickname.';
+                return;
+            }
             socket.emit('createRoom', nickname);
         });
         elements.joinBtn.addEventListener('click', () => {
+            if (!isConnected) {
+                elements.roomInfo.textContent = 'Not connected to server. Please refresh page and ensure backend is running.';
+                return;
+            }
             const code = elements.roomInput.value.trim().toUpperCase();
             nickname = elements.nicknameInput.value.trim() || 'Anonymous';
-            if (code.length === 4) socket.emit('joinRoom', { code, nickname });
+            if (!nickname) {
+                elements.roomInfo.textContent = 'Please enter a nickname.';
+                return;
+            }
+            if (code.length !== 4) {
+                elements.roomInfo.textContent = 'Please enter a valid 4-digit room code.';
+                return;
+            }
+            socket.emit('joinRoom', { code, nickname });
         });
 
         elements.submitNameBtn.addEventListener('click', () => {

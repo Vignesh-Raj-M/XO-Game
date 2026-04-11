@@ -18,6 +18,15 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.static(path.join(__dirname)));
 
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date() });
+});
+
 const rooms = new Map(); // roomCode -> { board, currentPlayer, players: {X: socket.id, O: socket.id}, scores: {X:0, O:0}, active: true }
 
 const winningConditions = [
@@ -40,8 +49,10 @@ function isDraw(board) {
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
+  console.log('Total connected users:', io.engine.clientsCount);
 
   socket.on('createRoom', (nickname) => {
+    console.log('Create room requested by:', socket.id, 'nickname:', nickname);
     let code;
     do {
       code = generateRoomCode();
@@ -54,6 +65,7 @@ io.on('connection', (socket) => {
       active: true
     });
     socket.join(code);
+    console.log('Room created with code:', code);
     socket.emit('roomCreated', code);
   });
 
@@ -83,8 +95,25 @@ io.on('connection', (socket) => {
 
   socket.on('joinRoom', (data) => {
     const { code, nickname } = data;
+    console.log('Join room requested by:', socket.id, 'code:', code, 'nickname:', nickname);
     const room = rooms.get(code);
-    if (!room || !room.players.X || room.players.O || !room.active) {
+    if (!room) {
+      console.log('Room not found:', code);
+      socket.emit('joinError', 'Room full or invalid');
+      return;
+    }
+    if (!room.players.X) {
+      console.log('Room creator not set for code:', code);
+      socket.emit('joinError', 'Room full or invalid');
+      return;
+    }
+    if (room.players.O) {
+      console.log('Room already has second player:', code);
+      socket.emit('joinError', 'Room full or invalid');
+      return;
+    }
+    if (!room.active) {
+      console.log('Room is inactive:', code);
       socket.emit('joinError', 'Room full or invalid');
       return;
     }
@@ -92,6 +121,7 @@ io.on('connection', (socket) => {
     room.players.O = socket.id;
     room.players.ONick = nickname || 'Anonymous';
     room.currentPlayer = 'X';
+    console.log('Player O joined room:', code);
     io.to(code).emit('roomReady', code, room.currentPlayer);
     socket.emit('playerAssigned', 'O');
     io.to(code).emit('roomUpdate', room);
@@ -100,8 +130,10 @@ io.on('connection', (socket) => {
   socket.on('makeMove', (data) => {
     const { code, index } = data;
     const room = rooms.get(code);
+    if (!room || !room.active || room.board[index] !== '') return;
+    
     const playerSymbol = room.players.X === socket.id ? 'X' : 'O';
-    if (!room || !room.active || room.board[index] !== '' || room.currentPlayer !== playerSymbol) return;
+    if (room.currentPlayer !== playerSymbol) return;
 
     room.board[index] = room.currentPlayer;
     const win = checkWin(room.board, room.currentPlayer);

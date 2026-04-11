@@ -1,14 +1,14 @@
-# Advanced XO Game TODO
+# Deployment TODO
 
-## Multiplayer Core: Complete ✓ (fixed create/join)
+## Task: Deploy XO Game to Render.com
 
-## Advanced Features:
-- [ ] Step 1: Add board size selector (3x3/4x4).
-- [ ] Step 2: Add move timer (30s).
-- [ ] Step 3: Add room chat.
-- [ ] Step 4: Themes (dark/light).
-- [ ] Step 5: AI single-player.
-- [ ] Step 6: Test & complete.
+**Steps:**
+- [x] Create .gitignore
+- [x] Create Procfile
+- [ ] Git add/commit/push
+- [ ] Create/connect GitHub repo
+- [ ] Deploy on Render.com
+- [ ] Test live URL
 
-Updated step-by-step.
+**Next:** Git commit/push...
 
