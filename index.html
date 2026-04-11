@@ -266,10 +266,11 @@
             elements.roomInfo.textContent = `Room created! Code: ${code}. Share with friend.`;
         });
 
-        socket.on('roomReady', (code, player) => {
+        socket.on('roomReady', (code, currentPlayer) => {
             roomCode = code;
             elements.roomSection.classList.add('hidden');
             elements.gameSection.classList.remove('hidden');
+            elements.status.textContent = `Turn: ${currentPlayer}`;
         });
 
         socket.on('playerAssigned', (symbol) => {

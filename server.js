@@ -122,8 +122,8 @@ io.on('connection', (socket) => {
     room.players.ONick = nickname || 'Anonymous';
     room.currentPlayer = 'X';
     console.log('Player O joined room:', code);
+    socket.emit('playerAssigned', 'O'); // Only new player
     io.to(code).emit('roomReady', code, room.currentPlayer);
-    socket.emit('playerAssigned', 'O');
     io.to(code).emit('roomUpdate', room);
   });
 
